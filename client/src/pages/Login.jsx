@@ -23,12 +23,11 @@ function Login({ onSwitchToSignUp }) {
   };
 
   return (
-    <div>
-      <h1>Log In</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
+    <div className="auth-page">
+      <form className="auth-card" onSubmit={handleSubmit}>
+        <h1>Log In</h1>
+        <div className="form-field">
           <label htmlFor="email">Email</label>
-          <br />
           <input
             id="email"
             type="email"
@@ -37,9 +36,8 @@ function Login({ onSwitchToSignUp }) {
             required
           />
         </div>
-        <div>
+        <div className="form-field">
           <label htmlFor="password">Password</label>
-          <br />
           <input
             id="password"
             type="password"
@@ -48,15 +46,17 @@ function Login({ onSwitchToSignUp }) {
             required
           />
         </div>
-        <button type="submit">Log In</button>
-      </form>
-      {message && <p>{message}</p>}
-      <p>
-        Don't have an account?{" "}
-        <button type="button" onClick={onSwitchToSignUp}>
-          Sign up
+        <button type="submit" className="primary-button">
+          Log In
         </button>
-      </p>
+        {message && <p className="auth-message">{message}</p>}
+        <p>
+          Don't have an account?{" "}
+          <button type="button" className="link-button" onClick={onSwitchToSignUp}>
+            Sign up
+          </button>
+        </p>
+      </form>
     </div>
   );
 }

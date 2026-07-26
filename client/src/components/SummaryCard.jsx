@@ -14,14 +14,14 @@ function SummaryCard({ restaurantId }) {
       .catch(() => setError("Could not load review summary."));
   }, [restaurantId]);
 
-  if (error) return <p>{error}</p>;
-  if (!summary) return <p>Loading summary...</p>;
+  if (error) return <p className="error-text">{error}</p>;
+  if (!summary) return <p className="empty-state">Loading summary...</p>;
 
   if (summary.totalReviews === 0) {
     return (
       <div className="summary-card">
         <h3>Review Summary</h3>
-        <p>No reviews yet.</p>
+        <p className="empty-state">No reviews yet.</p>
       </div>
     );
   }
@@ -29,35 +29,38 @@ function SummaryCard({ restaurantId }) {
   return (
     <div className="summary-card">
       <h3>Review Summary</h3>
-      <p>
-        {summary.positivePercent}% positive ({summary.totalReviews} review
-        {summary.totalReviews === 1 ? "" : "s"})
+      <p className="summary-stat">
+        <span className="stat-badge stat-badge-good">{summary.positivePercent}% positive</span>
+        <span className="muted-text">
+          {" "}
+          ({summary.totalReviews} review{summary.totalReviews === 1 ? "" : "s"})
+        </span>
       </p>
 
-      <h4>Top Compliments</h4>
+      <h4 className="section-label">Top Compliments</h4>
       {summary.topCompliments.length > 0 ? (
-        <ul>
+        <ul className="tag-list">
           {summary.topCompliments.map((c) => (
-            <li key={c.phrase}>
-              {c.phrase} ({c.count})
+            <li key={c.phrase} className="tag tag-good">
+              {c.phrase} <span className="tag-count">{c.count}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p>Not enough data yet.</p>
+        <p className="empty-state">Not enough data yet.</p>
       )}
 
-      <h4>Top Complaints</h4>
+      <h4 className="section-label">Top Complaints</h4>
       {summary.topComplaints.length > 0 ? (
-        <ul>
+        <ul className="tag-list">
           {summary.topComplaints.map((c) => (
-            <li key={c.phrase}>
-              {c.phrase} ({c.count})
+            <li key={c.phrase} className="tag tag-critical">
+              {c.phrase} <span className="tag-count">{c.count}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p>No recurring complaints.</p>
+        <p className="empty-state">No recurring complaints.</p>
       )}
     </div>
   );

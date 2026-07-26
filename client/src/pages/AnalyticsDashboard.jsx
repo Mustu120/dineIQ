@@ -17,26 +17,42 @@ import {
 } from "recharts";
 import { API_BASE } from "../config";
 
-// Single hue for single-series charts (reviews-over-time line, complaint
-// bars) -- these aren't "identity" charts, so every mark gets the same slot.
-const SERIES_BLUE = "#2a78d6";
+// Chart colors mirror the CSS custom properties in index.css, but Recharts
+// needs real color values (not CSS vars), so light/dark variants are picked
+// in JS based on the same OS-level signal the CSS media query uses.
+const PALETTE = {
+  light: { seriesBlue: "#2a78d6", grid: "#e1e0d9", axis: "#c3c2b7", mutedText: "#898781", surface: "#fcfcfb" },
+  dark: { seriesBlue: "#3987e5", grid: "#2c2c2a", axis: "#383835", mutedText: "#898781", surface: "#1a1a19" },
+};
 
 // Sentiment is a status, not a series: positive/negative map to the fixed
-// good/critical status colors, neutral gets a plain muted gray.
+// good/critical status colors (same in both themes), neutral gets a plain
+// muted gray.
 const SENTIMENT_COLORS = { Positive: "#0ca30c", Neutral: "#898781", Negative: "#d03b3b" };
 
-const GRID_COLOR = "#e1e0d9";
-const AXIS_COLOR = "#c3c2b7";
-const MUTED_TEXT = "#898781";
-const SURFACE = "#fcfcfb";
+function usePrefersDarkMode() {
+  const [isDark, setIsDark] = useState(
+    () => window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false
+  );
 
-const axisTick = { fill: MUTED_TEXT, fontSize: 12 };
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const listener = (e) => setIsDark(e.matches);
+    query.addEventListener("change", listener);
+    return () => query.removeEventListener("change", listener);
+  }, []);
+
+  return isDark;
+}
 
 // restaurant: { id, name }. token: the logged-in user's Supabase access
 // token, needed because this route requires auth.
 function AnalyticsDashboard({ restaurant, token, onBack }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const isDark = usePrefersDarkMode();
+  const colors = isDark ? PALETTE.dark : PALETTE.light;
+  const axisTick = { fill: colors.mutedText, fontSize: 12 };
 
   useEffect(() => {
     fetch(`${API_BASE}/api/restaurants/${restaurant.id}/analytics`, {
@@ -48,35 +64,35 @@ function AnalyticsDashboard({ restaurant, token, onBack }) {
   }, [restaurant.id, token]);
 
   return (
-    <div>
-      <button type="button" onClick={onBack}>
+    <div className="page">
+      <button type="button" className="ghost-button" onClick={onBack}>
         &larr; Back
       </button>
       <h2>Analytics: {restaurant.name}</h2>
 
-      {error && <p>{error}</p>}
-      {!data && !error && <p>Loading analytics...</p>}
+      {error && <p className="error-text">{error}</p>}
+      {!data && !error && <p className="empty-state">Loading analytics...</p>}
 
       {data && (
         <>
           <section className="chart-card">
             <h3>Reviews Over Time</h3>
             {data.reviewsOverTime.length === 0 ? (
-              <p>No reviews yet.</p>
+              <p className="empty-state">No reviews yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={data.reviewsOverTime}>
-                  <CartesianGrid stroke={GRID_COLOR} vertical={false} />
-                  <XAxis dataKey="date" stroke={AXIS_COLOR} tick={axisTick} />
-                  <YAxis allowDecimals={false} stroke={AXIS_COLOR} tick={axisTick} />
+                  <CartesianGrid stroke={colors.grid} vertical={false} />
+                  <XAxis dataKey="date" stroke={colors.axis} tick={axisTick} />
+                  <YAxis allowDecimals={false} stroke={colors.axis} tick={axisTick} />
                   <Tooltip />
                   <Line
                     type="monotone"
                     dataKey="count"
                     name="Reviews"
-                    stroke={SERIES_BLUE}
+                    stroke={colors.seriesBlue}
                     strokeWidth={2}
-                    dot={{ r: 4, fill: SERIES_BLUE, stroke: SURFACE, strokeWidth: 2 }}
+                    dot={{ r: 4, fill: colors.seriesBlue, stroke: colors.surface, strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -86,7 +102,7 @@ function AnalyticsDashboard({ restaurant, token, onBack }) {
           <section className="chart-card">
             <h3>Sentiment Breakdown</h3>
             {data.sentimentBreakdown.every((s) => s.value === 0) ? (
-              <p>No reviews yet.</p>
+              <p className="empty-state">No reviews yet.</p>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
@@ -111,16 +127,16 @@ function AnalyticsDashboard({ restaurant, token, onBack }) {
           <section className="chart-card">
             <h3>Top Complaint Keywords</h3>
             {data.topComplaints.length === 0 ? (
-              <p>No recurring complaints.</p>
+              <p className="empty-state">No recurring complaints.</p>
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={data.topComplaints}>
-                  <CartesianGrid stroke={GRID_COLOR} vertical={false} />
-                  <XAxis dataKey="phrase" stroke={AXIS_COLOR} tick={axisTick} />
-                  <YAxis allowDecimals={false} stroke={AXIS_COLOR} tick={axisTick} />
+                  <CartesianGrid stroke={colors.grid} vertical={false} />
+                  <XAxis dataKey="phrase" stroke={colors.axis} tick={axisTick} />
+                  <YAxis allowDecimals={false} stroke={colors.axis} tick={axisTick} />
                   <Tooltip />
-                  <Bar dataKey="count" name="Mentions" fill={SERIES_BLUE} radius={[4, 4, 0, 0]} barSize={32}>
-                    <LabelList dataKey="count" position="top" fill={MUTED_TEXT} fontSize={12} />
+                  <Bar dataKey="count" name="Mentions" fill={colors.seriesBlue} radius={[4, 4, 0, 0]} barSize={32}>
+                    <LabelList dataKey="count" position="top" fill={colors.mutedText} fontSize={12} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

@@ -7,9 +7,12 @@ import RestaurantCard from "./components/RestaurantCard";
 import RestaurantDetail from "./pages/RestaurantDetail";
 import FavouritesPage from "./pages/Favourites";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import Recommendations from "./pages/Recommendations";
 import { API_BASE } from "./config";
 
-const NEARBY_RADIUS_KM = 5;
+// Wide enough to cover a whole city (so "nearby" reads as "in my city"),
+// not just a tight walking-distance radius.
+const NEARBY_RADIUS_KM = 20;
 
 function App() {
   const [status, setStatus] = useState("Checking server...");
@@ -19,7 +22,7 @@ function App() {
   const [restaurants, setRestaurants] = useState([]);
   const [locationError, setLocationError] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
-  const [page, setPage] = useState("home"); // "home" or "favourites"
+  const [page, setPage] = useState("home"); // "home" | "favourites" | "recommendations"
   const [favourites, setFavourites] = useState([]);
   const [analyticsRestaurant, setAnalyticsRestaurant] = useState(null);
 
@@ -156,48 +159,93 @@ function App() {
     );
   }
 
-  if (page === "favourites") {
+  const renderPage = () => {
+    if (page === "favourites") {
+      return (
+        <FavouritesPage
+          favourites={favourites}
+          onToggleFavourite={handleToggleFavourite}
+          onViewDetails={setSelectedRestaurant}
+        />
+      );
+    }
+
+    if (page === "recommendations") {
+      return (
+        <Recommendations
+          token={session.access_token}
+          favouriteIdByRestaurant={favouriteIdByRestaurant}
+          onToggleFavourite={handleToggleFavourite}
+          onViewDetails={setSelectedRestaurant}
+        />
+      );
+    }
+
     return (
-      <FavouritesPage
-        favourites={favourites}
-        onToggleFavourite={handleToggleFavourite}
-        onViewDetails={setSelectedRestaurant}
-        onBack={() => setPage("home")}
-      />
+      <>
+        <p className="muted-text">
+          Server: {status} · Logged in as {session.user.email}
+        </p>
+
+        {locationError && <p className="error-text">{locationError}</p>}
+        <div className="map-card">
+          <MapView userLocation={userLocation} restaurants={restaurants} />
+        </div>
+
+        <section className="section">
+          <h2>Nearby Restaurants</h2>
+          {restaurants.length === 0 ? (
+            <p className="empty-state">No restaurants found nearby yet.</p>
+          ) : (
+            <ul className="card-list">
+              {restaurants.map((restaurant) => (
+                <RestaurantCard
+                  key={restaurant.id}
+                  restaurant={restaurant}
+                  isFavourited={Boolean(favouriteIdByRestaurant[restaurant.id])}
+                  onToggleFavourite={handleToggleFavourite}
+                  onViewDetails={setSelectedRestaurant}
+                />
+              ))}
+            </ul>
+          )}
+        </section>
+      </>
     );
-  }
+  };
 
   return (
     <div>
-      <h1>DineIQ</h1>
-      <p>Server status: {status}</p>
-      <p>Logged in as {session.user.email}</p>
-      <button type="button" onClick={handleLogout}>
-        Log Out
-      </button>
-      <button type="button" onClick={() => setPage("favourites")}>
-        My Favourites
-      </button>
-
-      {locationError && <p>{locationError}</p>}
-      <MapView userLocation={userLocation} restaurants={restaurants} />
-
-      <h2>Nearby Restaurants</h2>
-      {restaurants.length === 0 ? (
-        <p>No restaurants found nearby yet.</p>
-      ) : (
-        <ul>
-          {restaurants.map((restaurant) => (
-            <RestaurantCard
-              key={restaurant.id}
-              restaurant={restaurant}
-              isFavourited={Boolean(favouriteIdByRestaurant[restaurant.id])}
-              onToggleFavourite={handleToggleFavourite}
-              onViewDetails={setSelectedRestaurant}
-            />
-          ))}
-        </ul>
-      )}
+      <header className="app-header">
+        <h1 onClick={() => setPage("home")}>DineIQ</h1>
+        <div className="app-header-actions">
+          <button
+            type="button"
+            className={`nav-button${page === "home" ? " active" : ""}`}
+            onClick={() => setPage("home")}
+          >
+            Home
+          </button>
+          <button
+            type="button"
+            className={`nav-button${page === "recommendations" ? " active" : ""}`}
+            onClick={() => setPage("recommendations")}
+          >
+            Recommended
+          </button>
+          <button
+            type="button"
+            className={`nav-button${page === "favourites" ? " active" : ""}`}
+            onClick={() => setPage("favourites")}
+          >
+            My Favourites
+          </button>
+          <button type="button" className="ghost-button" onClick={handleLogout}>
+            Log Out
+          </button>
+        </div>
+      </header>
+      {renderPage()}
     </div>
   );
 }
