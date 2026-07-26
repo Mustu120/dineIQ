@@ -1,0 +1,36 @@
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+#root {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.chart-card {
+  background: #fcfcfb;
+  border: 1px solid rgba(11, 11, 11, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.summary-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.restaurant-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  list-style: none;
+}
