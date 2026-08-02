@@ -21,14 +21,14 @@ import { API_BASE } from "../config";
 // needs real color values (not CSS vars), so light/dark variants are picked
 // in JS based on the same OS-level signal the CSS media query uses.
 const PALETTE = {
-  light: { seriesBlue: "#2a78d6", grid: "#e1e0d9", axis: "#c3c2b7", mutedText: "#898781", surface: "#fcfcfb" },
-  dark: { seriesBlue: "#3987e5", grid: "#2c2c2a", axis: "#383835", mutedText: "#898781", surface: "#1a1a19" },
+  light: { seriesBlue: "#e23744", grid: "#ece6e1", axis: "#ddd4cd", mutedText: "#948b86", surface: "#ffffff" },
+  dark: { seriesBlue: "#ff5a68", grid: "#2c2624", axis: "#3a332f", mutedText: "#948b86", surface: "#1e1b19" },
 };
 
 // Sentiment is a status, not a series: positive/negative map to the fixed
 // good/critical status colors (same in both themes), neutral gets a plain
 // muted gray.
-const SENTIMENT_COLORS = { Positive: "#0ca30c", Neutral: "#898781", Negative: "#d03b3b" };
+const SENTIMENT_COLORS = { Positive: "#0c8a3e", Neutral: "#948b86", Negative: "#d03b3b" };
 
 function usePrefersDarkMode() {
   const [isDark, setIsDark] = useState(

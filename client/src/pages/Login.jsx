@@ -25,6 +25,9 @@ function Login({ onSwitchToSignUp }) {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={handleSubmit}>
+        <span className="brand">
+          Dine<span className="brand-accent">IQ</span>
+        </span>
         <h1>Log In</h1>
         <div className="form-field">
           <label htmlFor="email">Email</label>

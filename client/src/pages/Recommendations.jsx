@@ -4,14 +4,20 @@ import { API_BASE } from "../config";
 
 // Fetches GET /api/recommendations (needs the logged-in user's access
 // token) and renders the ranked list using the same card as everywhere
-// else, with an added match-score badge.
-function Recommendations({ token, favouriteIdByRestaurant, onToggleFavourite, onViewDetails }) {
+// else, with an added match-score badge. userLocation, when known, lets
+// the scoring formula factor in distance decay (Phase 13.3 of the guide)
+// instead of ignoring location entirely.
+function Recommendations({ token, userLocation, favouriteIdByRestaurant, onToggleFavourite, onViewDetails }) {
   const [recommendations, setRecommendations] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/recommendations`, {
+    const params = userLocation
+      ? `?${new URLSearchParams({ latitude: userLocation.latitude, longitude: userLocation.longitude })}`
+      : "";
+
+    fetch(`${API_BASE}/api/recommendations${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -21,7 +27,7 @@ function Recommendations({ token, favouriteIdByRestaurant, onToggleFavourite, on
       })
       .catch(() => setMessage("Could not load recommendations."))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, userLocation?.latitude, userLocation?.longitude]);
 
   return (
     <div className="page">
